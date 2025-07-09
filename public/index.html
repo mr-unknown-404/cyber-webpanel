@@ -38,7 +38,7 @@
       <div class="d-flex">
         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal">
           <i class="fas fa-cog"></i> Settings
-        </button>
+        </button>&nbsp;
         <button class="btn btn-outline-secondary" onclick="logout()">
           <i class="fa fa-sign-out"></i> Logout
         </button>
@@ -198,9 +198,10 @@
       });
     };
  function logout() {
-  localStorage.removeItem('auth'); 
+  localStorage.removeItem('jwt');
   window.location.href = '/login.html';
 }
+
     const form = document.getElementById('leadForm');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
