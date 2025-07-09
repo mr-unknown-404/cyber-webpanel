@@ -103,10 +103,11 @@
       });
 
       const data = await res.json();
-      if (data.success) {
-        localStorage.setItem('auth', 'true');
-        window.location.href = '/index.html';
-      } else {
+     if (data.success) {
+  localStorage.setItem('jwt', data.token);
+  window.location.href = '/index.html';
+}
+else {
         document.getElementById('message').innerText = data.error || 'Invalid credentials';
       }
     });
