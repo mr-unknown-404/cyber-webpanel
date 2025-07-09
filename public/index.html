@@ -23,6 +23,12 @@
   </style>
 </head>
 <body class="container py-4">
+<script>
+  // redirect if not logged in
+  if (!localStorage.getItem('auth')) {
+    window.location.href = '/login.html'; // or wherever your login page is
+  }
+</script>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light rounded mb-4">
