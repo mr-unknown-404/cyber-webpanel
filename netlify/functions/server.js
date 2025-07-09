@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 app.get('/api/leads', async (req, res) => {
   try {
     const allLeads = await leads.find().toArray();
-    res.json(allLeads);
+    res.status(200).json(allLeads);
   } catch (error) {
     console.error('Error retrieving leads:', error);
     res.status(500).json({ error: 'Failed to fetch leads' });
@@ -45,7 +45,7 @@ app.put('/api/leads/:id', async (req, res) => {
 
   try {
     const result = await leads.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
-    res.json(result);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error updating lead:', error);
     res.status(500).json({ error: 'Failed to update lead' });
@@ -58,23 +58,54 @@ app.delete('/api/leads/:id', async (req, res) => {
 
   try {
     const result = await leads.deleteOne({ _id: new ObjectId(id) });
-    res.json(result);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error deleting lead:', error);
     res.status(500).json({ error: 'Failed to delete lead' });
   }
 });
 
-// Export the handler function for Netlify to use
+// Netlify function handler for all requests
 export const handler = async (event, context) => {
-  const server = app; // Set up Express server
+  // Modify the event to act like an Express request
+  const req = {
+    method: event.httpMethod,
+    url: event.path,
+    headers: event.headers,
+    body: JSON.parse(event.body),
+    queryStringParameters: event.queryStringParameters,
+    pathParameters: event.pathParameters,
+  };
 
+  const res = {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '',
+    setHeader(name, value) {
+      this.headers[name] = value;
+    },
+    json(body) {
+      this.body = JSON.stringify(body);
+    },
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+  };
+
+  // Let express handle the request/response
   return new Promise((resolve, reject) => {
-    server(event, context, (err, res) => {
+    app(req, res, (err) => {
       if (err) {
         reject(err);
       } else {
-        resolve(res);
+        resolve({
+          statusCode: res.statusCode,
+          body: res.body,
+          headers: res.headers,
+        });
       }
     });
   });
