@@ -1,29 +1,45 @@
-// netlify/functions/linkedin-token.js
 const { MongoClient } = require('mongodb');
 
-exports.handler = async function (event, context) {
-  const client = new MongoClient(process.env.MONGO_URI);
-  await client.connect();
-  const db = client.db();
-  const settings = db.collection("settings");
-
-  if (event.httpMethod === "GET") {
-    const token = await settings.findOne({ key: "linkedinToken" });
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ linkedinToken: token?.value || "" })
-    };
+let client;
+async function getSettingsCollection() {
+  if (!client) {
+    client = new MongoClient(process.env.MONGO_URI);
+    await client.connect();
   }
+  const db = client.db(process.env.DB_NAME);
+  return db.collection('generalSettings');
+}
 
-  if (event.httpMethod === "POST") {
-    const body = JSON.parse(event.body);
-    await settings.updateOne(
-      { key: "linkedinToken" },
-      { $set: { value: body.linkedinToken } },
-      { upsert: true }
-    );
-    return { statusCode: 200, body: JSON.stringify({ success: true }) };
+exports.handler = async (event) => {
+  const settings = await getSettingsCollection();
+
+  try {
+    if (event.httpMethod === 'GET') {
+      const doc = await settings.findOne({});
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ linkedinToken: doc?.linkedinToken || '' }),
+      };
+    }
+
+    if (event.httpMethod === 'POST') {
+      const { linkedinToken } = JSON.parse(event.body);
+      if (!linkedinToken) {
+        return { statusCode: 400, body: JSON.stringify({ error: 'Missing token' }) };
+      }
+
+      const existing = await settings.findOne({});
+      if (existing) {
+        await settings.updateOne({ _id: existing._id }, { $set: { linkedinToken } });
+      } else {
+        await settings.insertOne({ linkedinToken });
+      }
+
+      return { statusCode: 200, body: JSON.stringify({ success: true }) };
+    }
+
+    return { statusCode: 405, body: 'Method Not Allowed' };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
-
-  return { statusCode: 405, body: "Method Not Allowed" };
 };
