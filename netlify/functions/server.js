@@ -1,84 +1,81 @@
+import { MongoClient, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
+import express from 'express';
+import bodyParser from 'body-parser';
+
+// Load environment variables
 dotenv.config();
 
-import express from 'express';
-import { MongoClient, ObjectId } from 'mongodb';
-import bodyParser from 'body-parser';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 const app = express();
-const PORT = 3001;
 const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.DB_NAME;
 const COLLECTION = process.env.COLLECTION;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let db, leads;
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-let db, leads, settings;
-MongoClient.connect(MONGO_URI)
+// Connect to MongoDB
+MongoClient.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(client => {
     db = client.db(DB_NAME);
     leads = db.collection(COLLECTION);
-    settings = db.collection('generalSettings');
-    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
   })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1); // Exit if connection fails
+  });
 
-// Get all leads
+app.use(bodyParser.json());
+
+// GET - Get all leads
 app.get('/api/leads', async (req, res) => {
-  const allLeads = await leads.find().toArray();
-  res.json(allLeads);
+  try {
+    const allLeads = await leads.find().toArray();
+    res.json(allLeads);
+  } catch (error) {
+    console.error('Error retrieving leads:', error);
+    res.status(500).json({ error: 'Failed to fetch leads' });
+  }
 });
 
-// Update a lead
+// PUT - Update a lead
 app.put('/api/leads/:id', async (req, res) => {
   const id = req.params.id;
   const updatedData = { ...req.body };
-  delete updatedData._id;
+  delete updatedData._id; // Remove _id from update data
 
-  const result = await leads.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: updatedData }
-  );
-  res.json(result);
+  try {
+    const result = await leads.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
+    res.json(result);
+  } catch (error) {
+    console.error('Error updating lead:', error);
+    res.status(500).json({ error: 'Failed to update lead' });
+  }
 });
 
-// Delete a lead
+// DELETE - Delete a lead
 app.delete('/api/leads/:id', async (req, res) => {
   const id = req.params.id;
-  const result = await leads.deleteOne({ _id: new ObjectId(id) });
-  res.json(result);
-});
 
-// GET LinkedIn Token
-app.get('/api/settings/linkedin-token', async (req, res) => {
   try {
-    const doc = await settings.findOne({});
-    res.json({ linkedinToken: doc?.linkedinToken || '' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch token' });
+    const result = await leads.deleteOne({ _id: new ObjectId(id) });
+    res.json(result);
+  } catch (error) {
+    console.error('Error deleting lead:', error);
+    res.status(500).json({ error: 'Failed to delete lead' });
   }
 });
 
-// POST LinkedIn Token
-app.post('/api/settings/linkedin-token', async (req, res) => {
-  const { linkedinToken } = req.body;
-  if (!linkedinToken) return res.status(400).json({ error: 'Missing token' });
+// Export the handler function for Netlify to use
+export const handler = async (event, context) => {
+  const server = app; // Set up Express server
 
-  try {
-    const existing = await settings.findOne({});
-    if (existing) {
-      await settings.updateOne({ _id: existing._id }, { $set: { linkedinToken } });
-    } else {
-      await settings.insertOne({ linkedinToken });
-    }
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to save token' });
-  }
-});
+  return new Promise((resolve, reject) => {
+    server(event, context, (err, res) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+};
