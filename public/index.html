@@ -38,6 +38,9 @@
         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal">
           <i class="fas fa-cog"></i> Settings
         </button>
+        <button class="btn btn-outline-secondary" onclick="logout()">
+          <i class="fa fa-sign-out"></i> Logout
+        </button>
       </div>
     </div>
   </nav>
@@ -193,7 +196,10 @@
         table.appendChild(row);
       });
     };
-
+ function logout() {
+  localStorage.removeItem('auth'); 
+  window.location.href = '/login.html';
+}
     const form = document.getElementById('leadForm');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
