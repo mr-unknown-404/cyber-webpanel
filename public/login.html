@@ -104,7 +104,8 @@
 
       const data = await res.json();
       if (data.success) {
-        window.location.href = '/dashboard.html';
+        localStorage.setItem('auth', 'true');
+        window.location.href = '/index.html';
       } else {
         document.getElementById('message').innerText = data.error || 'Invalid credentials';
       }
