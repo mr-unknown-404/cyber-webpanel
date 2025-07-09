@@ -160,7 +160,7 @@
     const table = document.getElementById('leadTable').querySelector('tbody');
 
     const loadLeads = async () => {
-      const res = await fetch('/.netlify/functions/api/leads');
+      const res = await fetch('/.netlify/functions/serverserverserverapi/leads');
       const leads = await res.json();
       table.innerHTML = '';
       leads.forEach((lead) => {
@@ -215,7 +215,7 @@
         }
       };
 
-      await fetch(`/.netlify/functions/api/leads/${_id}`, {
+      await fetch(`/.netlify/functions/serverserverserverapi/leads/${_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(lead)
@@ -250,7 +250,7 @@
 
     const deleteLead = async (id) => {
       if (confirm('Are you sure you want to delete this lead?')) {
-        await fetch(`/.netlify/functions/api/leads/${id}`, { method: 'DELETE' });
+        await fetch(`/.netlify/functions/serverserverserverapi/leads/${id}`, { method: 'DELETE' });
         loadLeads();
       }
     };
@@ -284,7 +284,7 @@
 
 
     document.getElementById('settingsModal').addEventListener('show.bs.modal', async () => {
-      const res = await fetch('/.netlify/functions/api/settings/linkedin-token');
+      const res = await fetch('/.netlify/functions/serverserverserverapi/settings/linkedin-token');
       const data = await res.json();
       document.getElementById('linkedinToken').value = data.linkedinToken || '';
     });
@@ -293,7 +293,7 @@
       e.preventDefault();
       const token = document.getElementById('linkedinToken').value.trim();
 
-      const res = await fetch('/.netlify/functions/api/settings/linkedin-token', {
+      const res = await fetch('/.netlify/functions/serverserverserverapi/settings/linkedin-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ linkedinToken: token })
