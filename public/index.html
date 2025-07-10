@@ -183,45 +183,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const table = document.getElementById('leadTable').querySelector('tbody');
-const applyFilters = () => {
-  filters.city = document.getElementById('cityFilter').value;
-  filters.status = document.getElementById('statusFilter').value;
-  filters.search = document.getElementById('searchInput').value;
-  currentPage = 1;
-  loadLeads();
-};
-
-const renderPagination = (totalItems, itemsPerPage) => {
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const container = document.getElementById('pagination');
-  container.innerHTML = '';
-
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.className = `btn btn-sm mx-1 ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}`;
-    btn.onclick = () => {
-      currentPage = i;
-      loadLeads();
-    };
-    container.appendChild(btn);
-  }
-};
-const resetFilters = () => {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('cityFilter').value = '';
-  document.getElementById('statusFilter').value = '';
-
-  filters = { city: '', status: '', search: '' };
-  currentPage = 1;
-  loadLeads();
-};
-
- let currentPage = 1;
-let filters = { city: '', status: '', search: '' };
-
-const loadLeads = async () => {
+  const loadLeads = async () => {
   const query = new URLSearchParams({
     page: currentPage,
     limit: 10,
@@ -230,7 +192,7 @@ const loadLeads = async () => {
     search: filters.search
   });
 
-  const res = await fetch(`/api/leads?${query}`);
+  const res = await fetch(`/.netlify/functions/leads?${query}`);
   const { data: leads, total } = await res.json();
 
   table.innerHTML = '';
@@ -259,32 +221,39 @@ const loadLeads = async () => {
   renderPagination(total, 10);
 };
 
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.edit-btn')) {
+    const lead = JSON.parse(decodeURIComponent(e.target.closest('.edit-btn').getAttribute('data-lead')));
+    document.getElementById('_id').value = lead._id;
+    document.getElementById('SrNo').value = lead.SrNo || '';
+    document.getElementById('name').value = lead.name || '';
+    document.getElementById('firstname').value = lead.firstname || '';
+    document.getElementById('designation').value = lead.designation || '';
+    document.getElementById('companyname').value = lead.companyname || '';
+    document.getElementById('city').value = lead.city || '';
+    document.getElementById('linkedin').value = lead.linkedin || '';
+    document.getElementById('Overview').value = lead.Overview || '';
+    document.getElementById('connectedBy').value = lead.connectedBy || '';
+    document.getElementById('status').value = lead.status || '';
+    document.getElementById('req').checked = !!lead.req;
+    document.getElementById('Researched').checked = !!lead.Researched;
+    document.getElementById('sent').checked = !!lead.sent;
+    document.getElementById('msgsent').checked = !!lead.msgsent;
+    document.getElementById('msg_draft_Company').value = lead.msg_draft?.Company || '';
+    document.getElementById('msg_draft_Individual').value = lead.msg_draft?.Individual || '';
+  }
+});
 
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.edit-btn')) {
-      const lead = JSON.parse(decodeURIComponent(e.target.closest('.edit-btn').getAttribute('data-lead')));
-      document.getElementById('_id').value = lead._id;
-      document.getElementById('SrNo').value = lead.SrNo || '';
-      document.getElementById('name').value = lead.name || '';
-      document.getElementById('firstname').value = lead.firstname || '';
-      document.getElementById('designation').value = lead.designation || '';
-      document.getElementById('companyname').value = lead.companyname || '';
-      document.getElementById('city').value = lead.city || '';
-      document.getElementById('linkedin').value = lead.linkedin || '';
-      document.getElementById('Overview').value = lead.Overview || '';
-      document.getElementById('connectedBy').value = lead.connectedBy || '';
-      document.getElementById('status').value = lead.status || '';
-      document.getElementById('req').checked = !!lead.req;
-      document.getElementById('Researched').checked = !!lead.Researched;
-      document.getElementById('sent').checked = !!lead.sent;
-      document.getElementById('msgsent').checked = !!lead.msgsent;
-      document.getElementById('msg_draft_Company').value = lead.msg_draft?.Company || '';
-      document.getElementById('msg_draft_Individual').value = lead.msg_draft?.Individual || '';
-    }
-  });
+const deleteLead = async (id) => {
+  if (confirm('Are you sure you want to delete this lead?')) {
+    await fetch(`/.netlify/functions/leads/${id}`, { method: 'DELETE' });
+    loadLeads();
+  }
+};
+
 document.getElementById('settingsModal').addEventListener('show.bs.modal', async () => {
   try {
-    const res = await fetch('/api/settings/linkedin-token');
+    const res = await fetch('/.netlify/functions/linkedin-token');
     const data = await res.json();
     document.getElementById('linkedinToken').value = data.linkedinToken || '';
   } catch (err) {
@@ -293,90 +262,56 @@ document.getElementById('settingsModal').addEventListener('show.bs.modal', async
   }
 });
 
-  const form = document.getElementById('leadForm');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const _id = document.getElementById('_id').value;
-    if (!_id) return alert('Please select a lead to edit.');
-    const lead = {
-      SrNo: Number(document.getElementById('SrNo').value) || undefined,
-      name: document.getElementById('name').value,
-      firstname: document.getElementById('firstname').value,
-      designation: document.getElementById('designation').value,
-      companyname: document.getElementById('companyname').value,
-      city: document.getElementById('city').value,
-      linkedin: document.getElementById('linkedin').value,
-      Overview: document.getElementById('Overview').value,
-      connectedBy: document.getElementById('connectedBy').value,
-      status: document.getElementById('status').value,
-      req: document.getElementById('req').checked,
-      Researched: document.getElementById('Researched').checked,
-      sent: document.getElementById('sent').checked,
-      msgsent: document.getElementById('msgsent').checked,
-      msg_draft: {
-        Company: document.getElementById('msg_draft_Company').value,
-        Individual: document.getElementById('msg_draft_Individual').value
-      }
-    };
-    await fetch(`/api/leads/${_id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(lead)
-    });
-    bootstrap.Modal.getInstance(document.getElementById('editLeadModal')).hide();
-    loadLeads();
-  });
-
-  const deleteLead = async (id) => {
-    if (confirm('Are you sure you want to delete this lead?')) {
-      await fetch(`/api/leads/${id}`, { method: 'DELETE' });
-      loadLeads();
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const _id = document.getElementById('_id').value;
+  if (!_id) return alert('Please select a lead to edit.');
+  const lead = {
+    SrNo: Number(document.getElementById('SrNo').value) || undefined,
+    name: document.getElementById('name').value,
+    firstname: document.getElementById('firstname').value,
+    designation: document.getElementById('designation').value,
+    companyname: document.getElementById('companyname').value,
+    city: document.getElementById('city').value,
+    linkedin: document.getElementById('linkedin').value,
+    Overview: document.getElementById('Overview').value,
+    connectedBy: document.getElementById('connectedBy').value,
+    status: document.getElementById('status').value,
+    req: document.getElementById('req').checked,
+    Researched: document.getElementById('Researched').checked,
+    sent: document.getElementById('sent').checked,
+    msgsent: document.getElementById('msgsent').checked,
+    msg_draft: {
+      Company: document.getElementById('msg_draft_Company').value,
+      Individual: document.getElementById('msg_draft_Individual').value
     }
   };
-
-  const copyToClipboard = (id) => {
-    const text = document.getElementById(id).value;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => alert('Copied!'));
-    } else {
-      const area = document.createElement('textarea');
-      area.value = text;
-      document.body.appendChild(area);
-      area.select();
-      try {
-        document.execCommand('copy');
-        alert('Copied!');
-      } catch (err) {
-        alert('Failed to copy: ' + err);
-      }
-      document.body.removeChild(area);
-    }
-  };
-
-  function logout() {
-    localStorage.removeItem('jwt');
-    window.location.href = '/login.html';
-  }
-
-  document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const token = document.getElementById('linkedinToken').value.trim();
-    const res = await fetch('/api/settings/linkedin-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ linkedinToken: token })
-    });
-    const result = await res.json();
-    if (result.success) {
-      alert('Token saved!');
-      bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
-    } else {
-      alert(result.error || 'Failed to save');
-    }
+  await fetch(`/.netlify/functions/leads/${_id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(lead)
   });
-
+  bootstrap.Modal.getInstance(document.getElementById('editLeadModal')).hide();
   loadLeads();
-  
+});
+
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const token = document.getElementById('linkedinToken').value.trim();
+  const res = await fetch('/.netlify/functions/linkedin-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ linkedinToken: token })
+  });
+  const result = await res.json();
+  if (result.success) {
+    alert('Token saved!');
+    bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+  } else {
+    alert(result.error || 'Failed to save');
+  }
+});
+
 </script>
 </body>
 </html>
