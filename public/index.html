@@ -180,6 +180,7 @@
         <th>LinkedIn</th>
         <th>Status</th>
         <th>Req Accepted</th>
+        <th>Req Sent </th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -252,6 +253,9 @@ const loadLeads = async () => {
       <td>${lead.status || ''}</td>
       <td>${lead.req ? '✅' : '❌'}</td>
       <td>
+         <input type="checkbox" class="form-check-input sent-check" data-id="${lead._id}" ${lead.sent ? 'checked' : ''}>
+      </td>
+      <td>
         <button class="btn btn-sm btn-outline-warning edit-btn" data-lead="${encoded}">
           <i class="fas fa-edit"></i>
         </button>
@@ -264,6 +268,20 @@ const loadLeads = async () => {
 
   renderPagination(total, 10);
 };
+
+  document.addEventListener('change', async (e) => {
+  if (e.target.classList.contains('sent-check') || e.target.classList.contains('req-check')) {
+    const leadId = e.target.dataset.id;
+    const field = e.target.classList.contains('sent-check') ? 'sent' : 'req';
+    const value = e.target.checked;
+
+    await fetch(`/api/leads/${leadId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: value })
+    });
+  }
+});
 
 
   document.addEventListener('click', (e) => {
