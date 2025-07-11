@@ -275,7 +275,7 @@ const loadLeads = async () => {
     const field = e.target.classList.contains('sent-check') ? 'sent' : 'req';
     const value = e.target.checked;
 
-    await fetch(`/api/leads/${leadId}`, {
+    await fetch(`/.netlify/functions/leads/${leadId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ [field]: value })
