@@ -388,6 +388,10 @@ document.getElementById('settingsModal').addEventListener('show.bs.modal', async
   });
 
   loadLeads();
+  // Auto-refresh leads every 30 seconds
+setInterval(() => {
+  loadLeads();
+}, 30000);
   
 </script>
 </body>
