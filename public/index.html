@@ -284,9 +284,10 @@ const loadLeads = async () => {
 });
 
 
-  document.addEventListener('click', (e) => {
-  if (e.target.closest('.edit-btn')) {
-    const lead = JSON.parse(decodeURIComponent(e.target.closest('.edit-btn').getAttribute('data-lead')));
+   document.addEventListener('click', (e) => {
+  const btn = e.target.closest('button.edit-btn');
+  if (btn) {
+    const lead = JSON.parse(decodeURIComponent(btn.getAttribute('data-lead')));
     document.getElementById('_id').value = lead._id;
     document.getElementById('SrNo').value = lead.SrNo || '';
     document.getElementById('name').value = lead.name || '';
