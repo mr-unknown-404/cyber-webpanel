@@ -110,8 +110,8 @@
             <label class="form-check-label" for="req">Request Accepted</label>
           </div>
           <div class="col form-check">
-            <input class="form-check-input" type="checkbox" id="msgsent">
-            <label class="form-check-label" for="msgsent">Message Sent</label>
+            <input class="form-check-input d-none" type="checkbox" id="msgsent">
+<!--             <label class="form-check-label" for="msgsent">Message Sent</label> -->
           </div>
           <div class="col form-check">
             <input class="form-check-input d-none" type="checkbox" id="sent">
@@ -182,6 +182,7 @@
         <th>Status</th>
         <th>Req Accepted</th>
         <th>Req Sent </th>
+        <th>Msg Sent </th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -255,6 +256,9 @@ const loadLeads = async () => {
       <td>${lead.req ? '✅' : '❌'}</td>
       <td>
          <input type="checkbox" class="form-check-input sent-check" data-id="${lead._id}" ${lead.sent ? 'checked' : ''}>
+      </td>
+      <td>
+         <input type="checkbox" class="form-check-input sent-check" data-id="${lead._id}" ${lead.msgsent ? 'checked' : ''}>
       </td>
       <td>
         <button class="btn btn-sm btn-outline-warning edit-btn" data-lead="${encoded}">
