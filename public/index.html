@@ -274,13 +274,38 @@ const loadLeads = async () => {
   renderPagination(total, 10);
 };
 
-  document.addEventListener('change', async (e) => {
-  if (e.target.classList.contains('sent-check') || e.target.classList.contains('req-check')) {
-    const leadId = e.target.dataset.id;
-    const field = e.target.classList.contains('sent-check') ? 'sent' : 'req';
-    const value = e.target.checked;
+//   document.addEventListener('change', async (e) => {
+//   if (e.target.classList.contains('sent-check') || e.target.classList.contains('req-check')) {
+//     const leadId = e.target.dataset.id;
+//     const field = e.target.classList.contains('sent-check') ? 'sent' : 'req';
+//     const value = e.target.checked;
 
-    await fetch(`/.netlify/functions/leads/${leadId}`, {
+//     await fetch(`/.netlify/functions/leads/${leadId}`, {
+//       method: 'PUT',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ [field]: value })
+//     });
+//   }
+// });
+  document.addEventListener('change', async (e) => {
+  if (
+    e.target.classList.contains('sent-check') ||
+    e.target.classList.contains('req-check') ||
+    e.target.classList.contains('msgsent-check')
+  ) {
+    const leadId = e.target.dataset.id;
+    let field;
+
+    if (e.target.classList.contains('sent-check')) {
+      field = 'sent';
+    } else if (e.target.classList.contains('req-check')) {
+      field = 'req';
+    } else if (e.target.classList.contains('msgsent-check')) {
+      field = 'msgsent';
+    }
+
+    const value = e.target.checked;
+     await fetch(`/.netlify/functions/leads/${leadId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ [field]: value })
