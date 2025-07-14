@@ -258,7 +258,7 @@ const loadLeads = async () => {
          <input type="checkbox" class="form-check-input sent-check" data-id="${lead._id}" ${lead.sent ? 'checked' : ''}>
       </td>
       <td>
-         <input type="checkbox" class="form-check-input sent-check" data-id="${lead._id}" ${lead.msgsent ? 'checked' : ''}>
+         <input type="checkbox" class="form-check-input msgsent-check" data-id="${lead._id}" ${lead.msgsent ? 'checked' : ''}>
       </td>
       <td>
         <button class="btn btn-sm btn-outline-warning edit-btn" data-lead="${encoded}">
