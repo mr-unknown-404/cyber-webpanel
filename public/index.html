@@ -253,11 +253,11 @@ const loadLeads = async () => {
       <td>${lead.city || ''}</td>
       <td><a href="${lead.linkedin || '#'}" target="_blank">View</a></td>
       <td>${lead.status || ''}</td>
-      <td>${lead.req ? '✅' : '❌'}</td>
-      <td>
+      <td style="text-align: center;">${lead.req ? '<i class="fas fa-check-square" style="color: green;font-size: 18px;"></i>' : '<i class="fa-solid fa-square-xmark"style="color: red;font-size: 18px;"></i>'}</td>
+      <td style="text-align: center;">
          <input type="checkbox" class="form-check-input sent-check" data-id="${lead._id}" ${lead.sent ? 'checked' : ''}>
       </td>
-      <td>
+      <td style="text-align: center;">
          <input type="checkbox" class="form-check-input msgsent-check" data-id="${lead._id}" ${lead.msgsent ? 'checked' : ''}>
       </td>
       <td>
